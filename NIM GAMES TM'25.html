@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DATABASE TEKNIK PERMINYAKAN</title>
+    <style>
+      :root {
+        --primary-orange: #776cef; /* Ungu sesuai kode terakhirmu */
+        --dark-black: #0f0f0f;
+        --light-black: #1a1a1a;
+        --text-white: #e0e0e0;
+        --correct-green: #00ff88;
+        --wrong-red: #ff4d4d;
+      }
+
+      * {
+        box-sizing: border-box;
+        font-family: "Segoe UI", sans-serif;
+      }
+
+      body {
+        background-color: var(--dark-black);
+        color: var(--text-white);
+        margin: 0;
+        padding: 40px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      h1 {
+        color: var(--primary-orange);
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        margin-bottom: 8px;
+        text-align: center;
+      }
+
+      .subtitle {
+        color: #888;
+        margin-bottom: 35px;
+        text-align: center;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1100px;
+        display: none;
+        margin: auto;
+      }
+
+      .active {
+        display: block;
+      }
+
+      /* TOGGLE SWITCH */
+      .toggle-container {
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--light-black);
+        padding: 15px;
+        border-radius: 12px;
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+        margin: 0 15px;
+      }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #333;
+        transition: 0.4s;
+        border-radius: 24px;
+        border: 1px solid var(--primary-orange);
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: var(--primary-orange);
+      }
+      input:checked + .slider:before {
+        transform: translateX(24px);
+      }
+
+      /* MENU GRID */
+      .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 18px;
+        width: 100%;
+        margin-top: 20px;
+      }
+
+      .main-btn {
+        background-color: var(--light-black);
+        color: var(--primary-orange);
+        border: 2px solid var(--primary-orange);
+        padding: 22px;
+        cursor: pointer;
+        border-radius: 14px;
+        font-weight: 600;
+        text-align: center;
+        transition: 0.25s ease;
+      }
+
+      .main-btn:hover {
+        background-color: var(--primary-orange);
+        color: var(--dark-black);
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      }
+
+      .db-access-btn {
+        background-color: #252525;
+        border-color: #444;
+        color: #fff;
+        width: 100%;
+        margin-top: 20px;
+      }
+
+      /* GAME TABLE */
+      .game-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 10px;
+        margin-top: 10px;
+      }
+
+      .game-table th {
+        color: var(--primary-orange);
+        text-align: left;
+        padding: 15px;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+      }
+
+      .game-table tr {
+        background-color: var(--light-black);
+      }
+      .game-table td {
+        padding: 14px 15px;
+      }
+      .game-table tr td:first-child {
+        border-radius: 10px 0 0 10px;
+      }
+      .game-table tr td:last-child {
+        border-radius: 0 10px 10px 0;
+      }
+
+      /* INPUT */
+      input[type="text"] {
+        width: 100%;
+        padding: 11px;
+        border-radius: 8px;
+        border: 1px solid #333;
+        background-color: #000;
+        color: white;
+        font-size: 0.95rem;
+        transition: 0.2s;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: var(--primary-orange);
+      }
+      input.correct {
+        border-color: var(--correct-green) !important;
+        color: var(--correct-green);
+      }
+      input.wrong {
+        border-color: var(--wrong-red) !important;
+      }
+
+      .search-box {
+        width: 100%;
+        padding: 14px;
+        font-size: 1rem;
+        margin-bottom: 20px;
+        border: 2px solid var(--primary-orange);
+        background: #000;
+        color: #fff;
+        border-radius: 10px;
+      }
+
+      .back-nav {
+        margin-bottom: 20px;
+        cursor: pointer;
+        color: var(--primary-orange);
+        font-weight: 500;
+      }
+
+      @media (max-width: 768px) {
+        .menu-grid {
+          grid-template-columns: 1fr;
+        }
+        .game-table thead {
+          display: none;
+        }
+        .game-table tr {
+          display: block;
+          padding: 18px;
+          margin-bottom: 10px;
+        }
+        .game-table td {
+          display: block;
+          width: 100%;
+          padding: 6px 0;
+        }
+        .game-table td::before {
+          content: attr(data-label);
+          color: var(--primary-orange);
+          font-size: 0.75rem;
+          display: block;
+          margin-bottom: 2px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>TEBAK NIM TEKNIK PERMINYAKAN 2025</h1>
+    <p class="subtitle">Hafalkan, Tebak, dan Cari Data TM'25</p>
+
+    <div id="screen-menu" class="container active">
+      <div class="toggle-container">
+        <span style="font-size: 0.85rem; color: #888">Urutan Normal</span>
+        <label class="switch">
+          <input type="checkbox" id="shuffle-toggle" checked />
+          <span class="slider"></span>
+        </label>
+        <span
+          style="
+            font-size: 0.85rem;
+            color: var(--primary-orange);
+            font-weight: bold;
+          "
+          >Acak (Shuffle)</span
+        >
+      </div>
+
+      <div class="menu-grid" id="range-buttons"></div>
+
+      <div style="margin-top: 20px">
+        <button
+          class="main-btn db-access-btn"
+          onclick="showScreen('screen-db')"
+        >
+          🔍 BUKA DATABASE (CARI NAMA/NIM)
+        </button>
+      </div>
+    </div>
+
+    <div id="screen-game" class="container">
+      <div class="back-nav" onclick="showScreen('screen-menu')">
+        ← Kembali ke Menu
+      </div>
+      <h2 id="game-title" style="color: var(--primary-orange)"></h2>
+      <table class="game-table">
+        <thead>
+          <tr>
+            <th>NIM</th>
+            <th>Nama Mahasiswa</th>
+            <th>Asal Tinggal</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="game-body"></tbody>
+      </table>
+    </div>
+
+    <div id="screen-db" class="container">
+      <div class="back-nav" onclick="showScreen('screen-menu')">
+        ← Kembali ke Menu
+      </div>
+      <h2>Database Mahasiswa</h2>
+      <input
+        type="text"
+        class="search-box"
+        id="db-search"
+        placeholder="Ketik Nama atau NIM untuk mencari..."
+        oninput="searchDatabase()"
+      />
+      <table class="game-table">
+        <thead>
+          <tr>
+            <th>NIM</th>
+            <th>Nama Mahasiswa</th>
+            <th>Asal Tinggal</th>
+          </tr>
+        </thead>
+        <tbody id="db-body"></tbody>
+      </table>
+    </div>
+
+    <script>
+      const studentsData = [
+        {
+          Name: "Shane David Febrian Panjaitan",
+          NIM: 12225001,
+          Origin: "Jakarta Utara",
+        },
+        { Name: "Khairani Amalia", NIM: 12225002, Origin: "Bandung Barat" },
+        {
+          Name: "Alvian Ramdhani Suharyono",
+          NIM: 12225003,
+          Origin: "Semarang",
+        },
+        {
+          Name: "Ligia Putri Patricia Freitas",
+          NIM: 12225004,
+          Origin: "Bogor",
+        },
+        { Name: "I Komang Sadu Nayaka Wigar", NIM: 12225005, Origin: "Depok" },
+        {
+          Name: "Sri Mihewi Rad Tambangraras",
+          NIM: 12225006,
+          Origin: "Magetan",
+        },
+        { Name: "Muh. Nafian Hafidza Azka", NIM: 12225007, Origin: "Cirebon" },
+        { Name: "Rafi Sakya Aji", NIM: 12225008, Origin: "Tangerang" },
+        {
+          Name: "Reinhard Nathanael Simanjuntak ",
+          NIM: 12225009,
+          Origin: "Tanjung Jabung Barat",
+        },
+        {
+          Name: "Muhammad Rasya Yudyamaulana",
+          NIM: 12225010,
+          Origin: "Jember",
+        },
+        { Name: "Muhammad Rifqi Al Hafiz", NIM: 12225011, Origin: "Wonosobo" },
+        { Name: "Metanoia Gracio Sianipar", NIM: 12225012, Origin: "Bekasi" },
+        { Name: "Rifadzaki Abiyyu Arfian", NIM: 12225013, Origin: "Bogor" },
+        {
+          Name: "Mahardika Nur Hakim Putrawan",
+          NIM: 12225014,
+          Origin: "Sukoharjo",
+        },
+        { Name: "Diega Bara Mahardika ", NIM: 12225015, Origin: "Karawang" },
+        {
+          Name: "Leonathan Binsar Julian Sibagariang",
+          NIM: 12225016,
+          Origin: "Medan",
+        },
+        { Name: "Raya Nathania Maharani", NIM: 12225017, Origin: "Malang" },
+        {
+          Name: "Farel Moza Putra Wintara",
+          NIM: 12225018,
+          Origin: "Balikpapan",
+        },
+        {
+          Name: "Garren Timotius Mamentu",
+          NIM: 12225019,
+          Origin: "Jakarta Timur",
+        },
+        {
+          Name: "David Chrismoreno Marulitua ",
+          NIM: 12225020,
+          Origin: "Bandung",
+        },
+        { Name: "Adrian Putra Dharma", NIM: 12225021, Origin: "Tangerang" },
+        { Name: "Mochammad Aling Layananta", NIM: 12225022, Origin: "Cirebon" },
+        { Name: "Bintang Priabudi", NIM: 12225023, Origin: "Pekanbaru" },
+        { Name: "Fauzan Aditya Ramadhan ", NIM: 12225024, Origin: "Cimahi" },
+        { Name: "Darren Devonliegh Han ", NIM: 12225025, Origin: "Tangerang" },
+        { Name: "Kevin T. R. P. Pardede ", NIM: 12225026, Origin: "Toba" },
+        {
+          Name: "Osbert Piniel Hamonangan Sitorus",
+          NIM: 12225027,
+          Origin: "Pekanbaru",
+        },
+        { Name: "Azriel Al-Fawwaz", NIM: 12225028, Origin: "Wonogiri" },
+        { Name: "Arif Sumurung Pardede", NIM: 12225029, Origin: "Toba" },
+        {
+          Name: "Fakhira Selima Budiana",
+          NIM: 12225030,
+          Origin: "Bandung Barat",
+        },
+        {
+          Name: "Yosephine Tripena Lumbanbatu ",
+          NIM: 12225031,
+          Origin: "Deli Serdang",
+        },
+        {
+          Name: "Muhammad Reza Laksamana Putra",
+          NIM: 12225032,
+          Origin: "Tangerang",
+        },
+        { Name: "Nauli Al Ghifari", NIM: 12225033, Origin: "Bukittinggi" },
+        {
+          Name: "Isaac Emmanuel Ferdinand Kadmaer ",
+          NIM: 12225034,
+          Origin: "Pelalawan",
+        },
+        {
+          Name: "Steven Matthew Silitonga",
+          NIM: 12225035,
+          Origin: "Bandung Barat",
+        },
+        { Name: "Rauf Muhammad Ihsan", NIM: 12225036, Origin: "Bekasi" },
+        { Name: "Muhammad Dhafa Lubis", NIM: 12225037, Origin: "Medan" },
+        {
+          Name: "Muhammad Trevano Ramsya Rosadinata",
+          NIM: 12225038,
+          Origin: "Bandung",
+        },
+        {
+          Name: "Faathir Al Fath Danson Durahman Junior",
+          NIM: 12225039,
+          Origin: "Cimahi",
+        },
+        {
+          Name: "Mazaya Syakira Firmansyah Putri ",
+          NIM: 12225040,
+          Origin: "Bekasi",
+        },
+        {
+          Name: "Benedictus Allejandro Susanto",
+          NIM: 12225041,
+          Origin: "Tangerang",
+        },
+        { Name: "Athalla Rasyid Fadilah", NIM: 12225042, Origin: "Semarang" },
+        { Name: "Javier Faiq Ahmad Aditya", NIM: 12225043, Origin: "Magelang" },
+        { Name: "Ruben Yabes Sihite", NIM: 12225044, Origin: "Sukabumi" },
+        { Name: "Muhamad Haykal Shiddiq", NIM: 12225045, Origin: "Bandung" },
+        {
+          Name: "Christian Welldan Manalu",
+          NIM: 12225046,
+          Origin: "Tangerang",
+        },
+        { Name: "Rava Arvian Danu", NIM: 12225047, Origin: "Jakarta Timur" },
+        {
+          Name: "Varrel Nathanael Hulu",
+          NIM: 12225048,
+          Origin: "Jakarta Timur",
+        },
+        { Name: "Jody Satria Bima", NIM: 12225049, Origin: "Tangerang" },
+        { Name: "Gadi Shafrin Hanidar", NIM: 12225050, Origin: "Kediri" },
+        { Name: "Safa Fauziah", NIM: 12225051, Origin: "Jakarta Timur" },
+        {
+          Name: "Muhammad Khadaffi Putra Darmawan ",
+          NIM: 12225052,
+          Origin: "Bogor",
+        },
+        { Name: "Ugga Priya Danendra", NIM: 12225053, Origin: "Magetan" },
+        {
+          Name: "Muhammad Rakhiradita Cersalzaha ",
+          NIM: 12225054,
+          Origin: "Padang",
+        },
+        { Name: "Sitorus, Rani Rianti ", NIM: 12225055, Origin: "Bandung" },
+        { Name: "Edgar Keandre Hafid", NIM: 12225056, Origin: "Bekasi" },
+        { Name: "I Made Sakha Ananta Wirya", NIM: 12225057, Origin: "Gianyar" },
+        { Name: "Andri Cahyanto ", NIM: 12225058, Origin: "Boyolali" },
+        { Name: "Feby Keysha Verina", NIM: 12225059, Origin: "Magelang" },
+        { Name: "Ginting, Keisha Keiana", NIM: 12225060, Origin: "Bandung" },
+        { Name: "Louis Fernando Karim", NIM: 12225061, Origin: "Palembang" },
+        { Name: "Ammar Zainul Muttaqin", NIM: 12225062, Origin: "Batam" },
+        { Name: "Muhammad Hilmy Farasyah", NIM: 12225063, Origin: "Surabaya" },
+        { Name: "Rossa Aditia Putri ", NIM: 12225064, Origin: "Yogyakarta" },
+        {
+          Name: "Joshua Parningotan Anandira ",
+          NIM: 12225065,
+          Origin: "Jakarta Barat",
+        },
+        { Name: "Mawar Desrilya", NIM: 12225066, Origin: "Jakarta Timur" },
+        { Name: "Afrand Fardhad", NIM: 12225067, Origin: "Tangerang Selatan" },
+        { Name: "Salsabila", NIM: 12225068, Origin: "Musi Banyuasin" },
+        { Name: "Rafa Azkafadey", NIM: 12225069, Origin: "Klaten" },
+        {
+          Name: "Tegar Akok Timothy Sinulingga",
+          NIM: 12225070,
+          Origin: "Medan",
+        },
+        {
+          Name: "Muhammad Azzam Nashirullah ",
+          NIM: 12225071,
+          Origin: "Cimahi",
+        },
+        { Name: "Naufal Rakha Kumara", NIM: 12225072, Origin: "Bekasi" },
+        { Name: "Azka maulana wibowo", NIM: 12225073, Origin: "Tangerang" },
+        { Name: "Yusra Handy Prasetyo ", NIM: 12225074, Origin: "Bekasi" },
+        {
+          Name: "Rizqy Naufal Fahreza",
+          NIM: 12225075,
+          Origin: "Jakarta Timur",
+        },
+        {
+          Name: "Jessica Josephine Panjaitan",
+          NIM: 12225076,
+          Origin: "Bengkalis (Duri)",
+        },
+        { Name: "Zahra Aulya Rahmadani", NIM: 12225077, Origin: "Depok" },
+        {
+          Name: "Tangguh Adhira Fathin Putra Arifin",
+          NIM: 12225078,
+          Origin: "Sidoarjo",
+        },
+        { Name: "Gracia Dearis Girsang ", NIM: 12225079, Origin: "Palembang" },
+        { Name: "Garnis Dwi Andani", NIM: 12225080, Origin: "Bandung" },
+        { Name: "Dzaky Hafiz Winarno", NIM: 12225081, Origin: "Cimahi" },
+        {
+          Name: "Teuku Abraar Danaransyah",
+          NIM: 12225082,
+          Origin: "Jakarta Selatan",
+        },
+        { Name: "Amanda Ratih Parahita ", NIM: 12225083, Origin: "Boyolali" },
+        { Name: "Khalfin Pratama", NIM: 12225084, Origin: "Rokan Hilir" },
+        { Name: "Raditya Zayyan Daffa", NIM: 12225085, Origin: "Bogor" },
+        { Name: "Abian Fikri Hilmi", NIM: 12225086, Origin: "Tegal" },
+        { Name: "Kinan Zayyan Handono", NIM: 12225087, Origin: "Bogor" },
+        { Name: "Daffa Archy Nafaros", NIM: 12225088, Origin: "Rejang Lebong" },
+        { Name: "Chantica Fepy Ardiantis ", NIM: 12225089, Origin: "Blitar" },
+        { Name: "Timothy Allen Listiyono ", NIM: 12225090, Origin: "Medan" },
+        { Name: "Fatih Rizieq", NIM: 12225091, Origin: "Depok" },
+        { Name: "Alfath Ramadhan", NIM: 12225092, Origin: "Jakarta Selatan" },
+        {
+          Name: "Andreas Vincent Partogi Lumbantoruan",
+          NIM: 12225093,
+          Origin: "Jakarta Timur",
+        },
+        {
+          Name: "Lucky Triyuda Tambunan",
+          NIM: 12225094,
+          Origin: "Tapanuli Utara",
+        },
+        { Name: "rendra adytia wijaya", NIM: 12225095, Origin: "Banyuwangi" },
+        {
+          Name: "Budianda Saor Nainggolan ",
+          NIM: 12225096,
+          Origin: "Deli Serdang",
+        },
+        { Name: "Frisca Geraldine Rotua", NIM: 12225097, Origin: "Bogor" },
+        { Name: "Abdulloh Mufid Mubarrok", NIM: 12225098, Origin: "Surabaya" },
+        {
+          Name: "Sajarattul Lulu Zahra Setyana ",
+          NIM: 12225099,
+          Origin: "Klaten",
+        },
+        {
+          Name: "Tazkiyah Putri Ramadhani",
+          NIM: 12225100,
+          Origin: "Kuantan Singingi",
+        },
+        { Name: "Fachri Alma", NIM: 12225101, Origin: "Jakarta Utara" },
+        {
+          Name: "Cheska Florence Tampubolon ",
+          NIM: 12225102,
+          Origin: "Tangerang",
+        },
+        { Name: "Muhammad Fairuz Al Zundi", NIM: 12225103, Origin: "Bekasi" },
+        {
+          Name: "Gheysar Al Haramain Iswandi",
+          NIM: 12225104,
+          Origin: "Jakarta Timur",
+        },
+        { Name: "Kiera Rasya Minerva", NIM: 12225105, Origin: "Bandung Barat" },
+        { Name: "Muhammad Farhan", NIM: 12225106, Origin: "Bukittinggi" },
+        {
+          Name: "Divaldo Voriozaghi Purba",
+          NIM: 12225107,
+          Origin: "Tebing Tinggi",
+        },
+        { Name: "Michael Nawwar", NIM: 12225108, Origin: "Batam" },
+        { Name: "Ridho Almughny ", NIM: 12225109, Origin: "Tangerang" },
+        { Name: "Novian Aditya", NIM: 12225110, Origin: "Lahat" },
+        {
+          Name: "Putra Alfrido Simanjuntak ",
+          NIM: 12225111,
+          Origin: "Humbang Hasundutan",
+        },
+        { Name: "Liska Suriyaningsih", NIM: 12225112, Origin: "Cirebon" },
+        { Name: "Bagas Adriyanto", NIM: 12225113, Origin: "Bantul" },
+        { Name: "Mizard Tiar Rahman", NIM: 12225114, Origin: "Medan" },
+        {
+          Name: "Raya Ramadhana Putra Yudono ",
+          NIM: 12225115,
+          Origin: "Ciamis",
+        },
+        {
+          Name: "Pryudi Abed Nego Sitorus",
+          NIM: 12225116,
+          Origin: "Serdang Bedagai",
+        },
+        {
+          Name: "Rayhan Zulfikar Kurniawan",
+          NIM: 12225117,
+          Origin: "Tasikmalaya",
+        },
+        { Name: "Muhammad Iqbal ", NIM: 12225118, Origin: "Bandung" },
+        { Name: "Farez Abyan Fayyadh", NIM: 12225119, Origin: "Bekasi" },
+        {
+          Name: "Muhammad Ikhlassul Amri Utama",
+          NIM: 12225120,
+          Origin: "Bogor",
+        },
+        { Name: "Hafidz Nur Arkan", NIM: 12225121, Origin: "Bantul" },
+        {
+          Name: "Khairunissa Nadira Tausar",
+          NIM: 12225122,
+          Origin: "Jakarta Selatan",
+        },
+        { Name: "Ahmad Rafli Ramadhan", NIM: 12225123, Origin: "Bekasi" },
+        { Name: "Gerhard Sipayung", NIM: 12225124, Origin: "Pematangsiantar" },
+        {
+          Name: "Anak Agung Ngurah Toto Abi Raditia",
+          NIM: 12225125,
+          Origin: "Denpasar",
+        },
+        { Name: "Brian Wilson ", NIM: 12225126, Origin: "Toba" },
+        { Name: "M. Thariq Kasim", NIM: 12225127, Origin: "Banda Aceh" },
+        {
+          Name: "Franzeska Jessica Mattea",
+          NIM: 12225128,
+          Origin: "Jakarta Timur",
+        },
+        {
+          Name: "Anwar Fadli Al Ariif Budi Santoso",
+          NIM: 12225129,
+          Origin: "Bogor",
+        },
+        { Name: "Muhammad Hafizh", NIM: 12225130, Origin: "Palembang" },
+        {
+          Name: "Naufal Rafiif Salman Salsabil",
+          NIM: 12225131,
+          Origin: "Indramayu",
+        },
+        { Name: "Fathan Akbar Fatahilah ", NIM: 12225132, Origin: "Karawang" },
+        {
+          Name: "Fransiska Manullang ",
+          NIM: 12225133,
+          Origin: "Jakarta Barat",
+        },
+        { Name: "Ramadani Adinata", NIM: 12225134, Origin: "Demak" },
+        { Name: "Muhammad Fakhri Gunawan", NIM: 12225135, Origin: "Tangerang" },
+        { Name: "Iffat Hanasta Zuhdi", NIM: 12225136, Origin: "Pati" },
+        {
+          Name: "Denzel Gideon Franclist Tinambunan",
+          NIM: 12225137,
+          Origin: "Pekanbaru",
+        },
+      ];
+
+      function init() {
+        const btnContainer = document.getElementById("range-buttons");
+        for (let i = 0; i < studentsData.length; i += 10) {
+          const start = i + 1;
+          const end = Math.min(i + 10, studentsData.length);
+          const btn = document.createElement("div");
+          btn.className = "main-btn";
+          btn.innerHTML = `NIM 12225${String(start).padStart(
+            3,
+            "0"
+          )} - ...${String(end).padStart(3, "0")}`;
+          btn.onclick = () => startGame(i, end);
+          btnContainer.appendChild(btn);
+        }
+        searchDatabase();
+      }
+
+      function showScreen(screenId) {
+        document
+          .querySelectorAll(".container")
+          .forEach((c) => c.classList.remove("active"));
+        document.getElementById(screenId).classList.add("active");
+        window.scrollTo(0, 0);
+      }
+
+      function shuffleArray(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      function startGame(start, end) {
+        showScreen("screen-game");
+        document.getElementById("game-title").innerText = `Rentang NIM ${
+          start + 1
+        } - ${end}`;
+
+        let slice = studentsData.slice(start, end);
+        if (document.getElementById("shuffle-toggle").checked) {
+          slice = shuffleArray(slice);
+        }
+
+        const tbody = document.getElementById("game-body");
+        tbody.innerHTML = "";
+
+        slice.forEach((s, idx) => {
+          const tr = document.createElement("tr");
+          const isNimMissing = Math.random() < 0.5;
+          const rowId = `row-${idx}`;
+
+          tr.innerHTML = `
+            <td data-label="NIM">${
+              isNimMissing
+                ? `<input type="text" oninput="val(this, '${rowId}')" data-ans="${s.NIM}">`
+                : s.NIM
+            }</td>
+            <td data-label="Nama Mahasiswa">${
+              !isNimMissing
+                ? `<input type="text" oninput="val(this, '${rowId}')" data-ans="${s.Name}">`
+                : s.Name
+            }</td>
+            <td data-label="Asal Tinggal"><input type="text" oninput="val(this, '${rowId}')" data-ans="${
+            s.Origin
+          }"></td>
+            <td data-label="Status" class="dot" id="${rowId}-status">⚪</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function val(input, rowId) {
+        const user = input.value.trim().toLowerCase();
+        const ans = input.getAttribute("data-ans").toLowerCase();
+
+        if (user === ans) {
+          input.classList.add("correct");
+          input.classList.remove("wrong");
+        } else {
+          input.classList.remove("correct");
+          if (user.length >= ans.length * 0.5) input.classList.add("wrong");
+        }
+
+        const row = input.closest("tr");
+        const inputs = row.querySelectorAll("input");
+        let correctCount = 0;
+        inputs.forEach((i) => {
+          if (
+            i.value.trim().toLowerCase() ===
+            i.getAttribute("data-ans").toLowerCase()
+          )
+            correctCount++;
+        });
+        document.getElementById(`${rowId}-status`).innerText =
+          correctCount === inputs.length ? "✅" : "⚪";
+      }
+
+      function searchDatabase() {
+        const query = document.getElementById("db-search").value.toLowerCase();
+        const tbody = document.getElementById("db-body");
+        tbody.innerHTML = "";
+        const filtered = studentsData.filter(
+          (s) =>
+            s.Name.toLowerCase().includes(query) ||
+            s.NIM.toString().includes(query)
+        );
+        filtered.forEach((s) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${s.NIM}</td><td>${s.Name}</td><td>${s.Origin}</td>`;
+          tbody.appendChild(tr);
+        });
+      }
+
+      init();
+    </script>
+  </body>
+</html>
