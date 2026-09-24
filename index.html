@@ -628,7 +628,15 @@ const canon=t=>{t=clean(t).replace(/[.!?"'`]/g,'').trim();return ALIAS[t]||t;};
 const splitTerms=s=>clean(s).split(/\s*(?:,|;|\/|&|\+|\bdan\b|\bdengan\b|\bserta\b)\s*/).map(canon).filter(Boolean);
 
 // NIM, nama, asal: harus sama persis (huruf besar/kecil diabaikan)
+// Nama, asal: harus sama persis (huruf besar/kecil diabaikan)
 function checkExact(input,answer){return clean(input)!==''&&clean(input)===clean(answer);}
+
+// NIM: bisa diisi full (12225024) atau 3 digit terakhir saja (024)
+function checkNIM(input,answer){
+  const u = clean(input);
+  const a = clean(answer);
+  return u !== '' && (u === a || u === a.slice(-3));
+}
 
 // Riwayat penyakit: benar bila minimal satu penyakit cocok, huruf besar/kecil diabaikan
 function checkDisease(input,answer){
@@ -744,7 +752,7 @@ function restartGame(){
 function buildRow(s,idx){
   const nimHidden=Math.random()<.5;
   const specs=[
-    {key:'nim',label:'NIM',value:String(s.NIM),hidden:nimHidden,check:checkExact,ph:'Isi NIM',mode:'numeric'},
+    {key:'nim',label:'NIM',value:String(s.NIM),hidden:nimHidden,check:checkNIM,ph:'NIM (atau 3 digit akhir)',mode:'numeric'},
     {key:'name',label:'Nama mahasiswa',value:s.Name,hidden:!nimHidden,check:checkExact,ph:'Isi nama lengkap'},
     {key:'origin',label:'Asal tinggal',value:s.Origin,hidden:true,check:checkExact,ph:'Isi asal'},
     {key:'history',label:'Riwayat penyakit',value:s.History,hidden:true,check:checkDisease,ph:'Isi riwayat, atau -',minLen:3}
