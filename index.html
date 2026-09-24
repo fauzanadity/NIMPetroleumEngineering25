@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <title>Tebak NIM — Teknik Perminyakan 2025</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23AB03A9' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M3 21h18'/><path d='M7 21l3-14h4l3 14'/><path d='M10 7l2-4 2 4'/><path d='M8.5 14h7'/><path d='M9.5 10.5h5'/><path d='M12 14v7'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -24,6 +25,11 @@
   --indigo:#5b5bf0;
   --mint:#2fd39a;
   --rose:#ff6f8e;
+
+  --c-nim:#3b6cf5;    --c-nim-bg:#eaf0ff;    --t-nim:#2f56d6;
+  --c-name:#a855f7;   --c-name-bg:#f5ecff;   --t-name:#7e34d6;
+  --c-origin:#06b6d4; --c-origin-bg:#e3f8fc; --t-origin:#0a7f95;
+  --c-hist:#f59e0b;   --c-hist-bg:#fff3dc;   --t-hist:#b45309;
 
   --shadow-sm:0 1px 2px rgba(60,60,140,.06),0 6px 18px -8px rgba(80,80,200,.16);
   --shadow-md:0 2px 4px rgba(60,60,140,.05),0 18px 40px -16px rgba(80,80,200,.32);
@@ -187,18 +193,26 @@ input{font:inherit;color:inherit}
 }
 .q-fields{display:grid;grid-template-columns:.95fr 2fr 1.25fr 1.6fr;gap:12px}
 .field{display:flex;flex-direction:column;gap:6px;min-width:0}
-.lbl{font-size:.74rem;font-weight:600;color:var(--muted);letter-spacing:.01em}
+
+.f-nim{--fc:var(--c-nim);--fb:var(--c-nim-bg);--ft:var(--t-nim)}
+.f-name{--fc:var(--c-name);--fb:var(--c-name-bg);--ft:var(--t-name)}
+.f-origin{--fc:var(--c-origin);--fb:var(--c-origin-bg);--ft:var(--t-origin)}
+.f-history{--fc:var(--c-hist);--fb:var(--c-hist-bg);--ft:var(--t-hist)}
+
+.lbl{display:flex;align-items:center;gap:6px;font-size:.76rem;font-weight:700;color:var(--ft,var(--muted))}
+.lbl::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--fc,var(--muted));flex:none}
 .static{
   min-height:44px;display:flex;align-items:center;padding:10px 13px;border-radius:12px;
-  font-size:.9rem;font-weight:600;background:linear-gradient(120deg,#f4f5ff,#fbf4ff);border:1px solid transparent;
-  overflow-wrap:anywhere;
+  font-size:.9rem;font-weight:600;color:var(--ink);overflow-wrap:anywhere;
+  background:var(--fb);box-shadow:inset 4px 0 0 var(--fc);
 }
 .inp{
   width:100%;min-height:44px;padding:10px 13px;border-radius:12px;font-size:.9rem;outline:none;
-  background:#fff;border:1.5px solid var(--line);transition:border-color .2s,box-shadow .2s,background .2s;
+  background:#fff;border:1.5px solid color-mix(in srgb,var(--fc) 35%,#fff);
+  transition:border-color .2s,box-shadow .2s,background .2s;
 }
 .inp::placeholder{color:#b3b5d0}
-.inp:focus{border-color:var(--indigo);box-shadow:0 0 0 4px rgba(91,91,240,.14)}
+.inp:focus{border-color:var(--fc);box-shadow:0 0 0 4px color-mix(in srgb,var(--fc) 20%,transparent)}
 .inp.correct{border-color:var(--mint);background:#f2fdf8;color:#0f7a55;font-weight:600}
 .inp.wrong{border-color:var(--rose);background:#fff5f7;animation:shake .28s}
 
@@ -260,16 +274,18 @@ input{font:inherit;color:inherit}
 }
 .s-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
 .avatar{
-  width:48px;height:48px;border-radius:16px;flex:none;display:grid;place-items:center;color:#fff;
-  font-family:var(--font-display);font-weight:800;font-size:1rem;box-shadow:0 10px 18px -8px rgba(80,80,200,.5);
+  width:48px;height:48px;border-radius:16px;flex:none;display:grid;place-items:center;
+  font-family:var(--font-display);font-weight:800;font-size:.95rem;
+  color:var(--t-nim);background:var(--c-nim-bg);
+  box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c-nim) 30%,#fff);
 }
 .s-main{min-width:0;flex:1}
-.s-main h3{font-size:.98rem;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
-.nim{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums;margin-bottom:8px}
+.s-main h3{font-size:.98rem;font-weight:700;line-height:1.3;overflow-wrap:anywhere;color:var(--t-name)}
+.nim{font-size:.8rem;font-weight:600;color:var(--t-nim);font-variant-numeric:tabular-nums;margin-bottom:8px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:.76rem;font-weight:600}
-.chip.loc{background:linear-gradient(120deg,#e9f1ff,#eef0ff);color:#3f56d9}
-.chip.med{background:linear-gradient(120deg,#fff0e6,#ffe9f1);color:#c8365f}
+.chip.loc{background:var(--c-origin-bg);color:var(--t-origin)}
+.chip.med{background:var(--c-hist-bg);color:var(--t-hist)}
 .chip.none{background:#f3f4fa;color:var(--muted)}
 mark{background:linear-gradient(120deg,#ffe58a,#ffc8de);color:inherit;border-radius:4px;padding:0 2px}
 
@@ -278,6 +294,10 @@ mark{background:linear-gradient(120deg,#ffe58a,#ffc8de);color:inherit;border-rad
   background:rgba(255,255,255,.7);border:1.5px dashed #cfd1ea;
 }
 .empty b{display:block;font-family:var(--font-display);font-size:1.1rem;color:var(--ink);margin-bottom:4px}
+
+.legend{gap:16px}
+.legend .lg{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.legend .k{width:10px;height:10px;border-radius:50%;background:var(--fc)}
 
 /* ---------- ANIMASI ---------- */
 @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
@@ -581,9 +601,6 @@ const RIWAYAT = [
   /* 121-130 */ "-", "Alergi dingin, asam lambunf", "Rhinitis dan Sinusitis", "-", "-", "-", "-", "-", "-", "-",
   /* 131-137 */ "Flek, Brongkitis, amandel", "-", "Maag", "-", "-", "-", "-"
 ];
-/* Catatan: daftar asli dari pengguna berisi 148 entri, sedangkan mahasiswa ada 137.
-   Entri ke-138 s.d. 148 tidak terpakai:
-   "-","-","Flek","Brongkitis","amandel","-","Maag","-","-","-","-" */
 
 const students=RAW.map((r,i)=>({
   Name:r[0].trim(),
@@ -632,7 +649,6 @@ const pad=n=>String(n).padStart(3,'0');
 const nimOf=n=>'12225'+pad(n);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const hasHistory=s=>!NONE.has(clean(s.History));
-const GRADS=['--g-cool','--g-violet','--g-warm','--g-mint','--g-main'];
 
 function shuffle(arr){
   const a=[...arr];
@@ -665,7 +681,12 @@ function initMenu(){
   $('hero-stats').innerHTML=
     `<span class="hero-stat"><b>${total}</b> mahasiswa</span>`+
     `<span class="hero-stat"><b>${sets}</b> set latihan</span>`+
-    `<span class="hero-stat"><b>4</b> data per orang</span>`;
+    `<span class="hero-stat legend">`+
+    `<span class="lg"><i class="k f-nim"></i>NIM</span>`+
+    `<span class="lg"><i class="k f-name"></i>Nama</span>`+
+    `<span class="lg"><i class="k f-origin"></i>Asal</span>`+
+    `<span class="lg"><i class="k f-history"></i>Riwayat</span>`+
+    `</span>`;
 
   const grid=$('range-grid');grid.innerHTML='';
   for(let i=0,k=0;i<total;i+=10,k++){
@@ -673,7 +694,7 @@ function initMenu(){
     const b=document.createElement('button');
     b.type='button';
     b.className='range-card';
-    b.style.setProperty('--g',`var(${GRADS[k%GRADS.length]})`);
+    b.style.setProperty('--g','var(--g-main)');
     b.style.setProperty('--i',k);
     b.innerHTML=
       `<span class="range-badge">${k+1}</span>`+
@@ -832,8 +853,7 @@ function revealRow(row){
 function updateProgress(){
   const pct=game.total?Math.round(game.done/game.total*100):0;
   $('stat-done').textContent=`${game.done}/${game.total}`;
-  $('progress-bar').style.width=pct+'%';
-  $('progress-wrap').setAttribute('aria-valuenow',pct);
+  $('progress-bar').style.width=pct+'\%';$('progress-wrap').setAttribute('aria-valuenow',pct);
 }
 
 function stopTimer(){if(timerId){clearInterval(timerId);timerId=null;}}
@@ -953,7 +973,7 @@ function renderDb(){
       ?`<span class="chip med"><svg class="ic"><use href="#i-pulse"/></svg>${hl(s.History,q)}</span>`
       :`<span class="chip none">Tanpa riwayat</span>`;
     el.innerHTML=
-      `<div class="avatar" style="background:var(${GRADS[i%GRADS.length]})">${esc(initials(s.Name))}</div>`+
+      `<div class="avatar" title="3 digit terakhir NIM">${String(s.NIM).slice(-3)}</div>`+
       `<div class="s-main">`+
         `<h3>${hl(s.Name,q)}</h3>`+
         `<div class="nim">${hl(String(s.NIM),q)}</div>`+
