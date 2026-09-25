@@ -803,25 +803,45 @@ function buildRow(s,idx){
   return card;
 }
 
-function onInput(row,f){
-  const raw=f.input.value;
-  const user=clean(raw);
-  const ok=f.check(raw,f.value);
+function onInput(row, f) {
+  const raw = f.input.value;
+  const user = clean(raw);
+  const ok = f.check(raw, f.value);
 
-  f.input.classList.toggle('correct',ok);
-  if(ok){
+  // 1. Hapus timer sebelumnya jika pengguna kembali mengetik
+  if (f.errorTimer) clearTimeout(f.errorTimer);
+
+  // 2. Jika benar, langsung hijaukan secara instan
+  f.input.classList.toggle('correct', ok);
+  
+  if (ok) {
     f.input.classList.remove('wrong');
-  }else if(user.length>=f.minLen){
-    // ulangi animasi getar saat salah lagi
-    f.input.classList.remove('wrong');void f.input.offsetWidth;f.input.classList.add('wrong');
-    if(!f.lastWrong||!user.startsWith(f.lastWrong)){f.wrong++;f.lastWrong=user;}
-  }else{
+  } else {
+    // 3. Hapus warna merah saat pengguna aktif mengetik biar tidak pusing
     f.input.classList.remove('wrong');
+
+    // 4. Set timer: jika pengguna diam (berhenti mengetik) selama 800ms, baru tampilkan merah
+    if (user.length >= f.minLen) {
+      f.errorTimer = setTimeout(() => {
+        // Trigger ulang animasi getar dan warna merah
+        f.input.classList.remove('wrong');
+        void f.input.offsetWidth; 
+        f.input.classList.add('wrong');
+
+        // Hitung jumlah kesalahan untuk memunculkan tombol bantuan
+        if (!f.lastWrong || !user.startsWith(f.lastWrong)) {
+          f.wrong++;
+          f.lastWrong = user;
+        }
+        
+        if (!row.done && row.fields.some(x => x.wrong >= 3)) showHelp(row);
+      }, 800); // 800 milidetik (0.8 detik) jeda yang nyaman untuk mata
+    }
   }
 
-  const done=row.fields.every(x=>x.check(x.input.value,x.value));
-  setDone(row,done,false);
-  if(!done&&row.fields.some(x=>x.wrong>=3)) showHelp(row);
+  // 5. Cek apakah seluruh baris sudah selesai terjawab
+  const done = row.fields.every(x => x.check(x.input.value, x.value));
+  setDone(row, done, false);
 }
 
 function setDone(row,done,assisted){
