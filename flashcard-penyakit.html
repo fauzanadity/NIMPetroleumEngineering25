@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Flashcard Medis — TM 2025</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1b1a3a;
+  --ink-2: #4b4a6b;
+  --muted: #8082a3;
+  --line: #e8e9f7;
+  --tint: #f6f6ff;
+
+  --g-main: linear-gradient(120deg, #4f6bff 0%, #8b5cf6 52%, #ff5fa2 100%);
+  --g-warm: linear-gradient(135deg, #ff9454, #ff5fa2);
+  --g-mint: linear-gradient(135deg, #2fd39a, #22c8e6);
+  --indigo: #5b5bf0;
+
+  --c-nim: #3b6cf5;    --c-nim-bg: #eaf0ff;   --t-nim: #2f56d6;
+  --c-hist: #f59e0b;   --c-hist-bg: #fff3dc;  --t-hist: #b45309;
+
+  --shadow-sm: 0 1px 2px rgba(60,60,140,.06), 0 6px 18px -8px rgba(80,80,200,.16);
+  --shadow-card: 0 20px 45px -15px rgba(80,80,200,.22), 0 0 1px rgba(60,60,140,.2);
+
+  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 1.5;
+  background: #fbfbfe;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 40px;
+}
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: -1;
+  background:
+    radial-gradient(60vmax 40vmax at 6% -6%, rgba(99,102,241,.18), transparent 60%),
+    radial-gradient(50vmax 40vmax at 104% 4%, rgba(255,95,162,.15), transparent 60%),
+    radial-gradient(60vmax 45vmax at 72% 106%, rgba(34,200,230,.15), transparent 60%),
+    #fff;
+}
+
+header { text-align: center; margin-bottom: 20px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 14px; border-radius: 99px; font-size: .8rem; font-weight: 700;
+  color: var(--t-hist); background: var(--c-hist-bg); border: 1px solid rgba(245,158,11,.3);
+  margin-bottom: 12px;
+}
+h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  background: var(--g-main);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+p.subtitle { color: var(--ink-2); font-size: .95rem; margin-top: 4px; }
+
+/* Segmented Control Urut / Acak */
+.controls-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.seg {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.9);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+}
+.seg::before {
+  content: ''; position: absolute; top: 4px; bottom: 4px; left: 4px;
+  width: calc(50% - 4px); border-radius: 10px;
+  background: var(--g-main);
+  box-shadow: 0 4px 14px -3px rgba(139,92,246,.6);
+  transition: transform .25s cubic-bezier(.3,.9,.3,1);
+}
+.seg[data-mode="ordered"]::before { transform: translateX(0); }
+.seg[data-mode="shuffle"]::before { transform: translateX(100%); }
+.seg button {
+  position: relative; z-index: 1; padding: 8px 18px; border-radius: 10px;
+  font-weight: 700; font-size: .85rem; border: none; background: none;
+  color: var(--ink-2); cursor: pointer; transition: color .2s;
+}
+.seg button[aria-pressed="true"] { color: #fff; }
+
+/* Flashcard Container & 3D Flip */
+.card-scene {
+  width: 100%;
+  max-width: 480px;
+  height: 330px;
+  perspective: 1200px;
+  margin-bottom: 22px;
+}
+.card-flipper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform .55s cubic-bezier(.2,.85,.3,1.15);
+  cursor: pointer;
+}
+.card-flipper.is-flipped { transform: rotateY(180deg); }
+
+.card-face {
+  position: absolute; inset: 0;
+  border-radius: 26px;
+  background: #fff;
+  border: 1.5px solid var(--line);
+  box-shadow: var(--shadow-card);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 28px 24px;
+  user-select: none;
+}
+.card-back {
+  transform: rotateY(180deg);
+  background: linear-gradient(180deg, #fffdf9 0%, #fff 100%);
+  border-color: rgba(245,158,11,.3);
+}
+
+.face-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.nim-pill {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: .88rem;
+  color: var(--t-nim);
+  background: var(--c-nim-bg);
+  padding: 5px 12px;
+  border-radius: 99px;
+}
+.hint-badge {
+  font-size: .76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+}
+
+.face-center {
+  text-align: center;
+  padding: 10px 0;
+}
+.face-center .title {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+.face-center .meta {
+  font-size: .95rem;
+  color: var(--ink-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.disease-box {
+  margin-top: 10px;
+  background: var(--c-hist-bg);
+  border: 1.5px dashed rgba(245,158,11,.6);
+  padding: 14px 18px;
+  border-radius: 16px;
+  display: inline-block;
+}
+.disease-box h2 {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  color: var(--t-hist);
+  letter-spacing: -.01em;
+}
+
+.face-bottom {
+  text-align: center;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* Navigasi */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 480px;
+}
+.btn-nav {
+  padding: 12px 20px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: .9rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all .2s;
+}
+.btn-nav:hover:not(:disabled) {
+  background: var(--tint);
+  border-color: #c9caf0;
+  color: var(--indigo);
+  transform: translateY(-1px);
+}
+.btn-nav:disabled { opacity: .45; cursor: not-allowed; }
+.card-counter {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  min-width: 90px;
+  text-align: center;
+}
+
+/* Shortcut info */
+.shortcuts {
+  margin-top: 24px;
+  font-size: .8rem;
+  color: var(--muted);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.shortcuts kbd {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Spesifik Riwayat Kesehatan</div>
+  <h1>Flashcard Medis TM 2025</h1>
+  <p class="subtitle">Hafalkan riwayat penyakit teman seangkatan untuk kesiapsiagaan di lapangan.</p>
+</header>
+
+<div class="controls-top">
+  <div class="seg" id="mode-seg" data-mode="ordered" role="group" aria-label="Mode Flashcard">
+    <button type="button" data-mode="ordered" aria-pressed="true">Urut</button>
+    <button type="button" data-mode="shuffle" aria-pressed="false">Acak</button>
+  </div>
+</div>
+
+<div class="card-scene">
+  <div class="card-flipper" id="flipper" onclick="flipCard()" role="button" aria-label="Balik kartu flashcard">
+    <!-- Muka Depan: Identitas Mahasiswa -->
+    <div class="card-face card-front">
+      <div class="face-top">
+        <span class="nim-pill" id="f-nim">12225000</span>
+        <span class="hint-badge">Nama & Asal</span>
+      </div>
+      <div class="face-center">
+        <div class="title" id="f-name">-</div>
+        <div class="meta" id="f-origin">-</div>
+      </div>
+      <div class="face-bottom">Klik atau tekan <b>Spasi</b> untuk lihat riwayat</div>
+    </div>
+
+    <!-- Muka Belakang: Riwayat Penyakit -->
+    <div class="card-face card-back">
+      <div class="face-top">
+        <span class="nim-pill" id="b-nim">12225000</span>
+        <span class="hint-badge" style="color:var(--t-hist)">Riwayat Penyakit</span>
+      </div>
+      <div class="face-center">
+        <div class="meta" style="margin-bottom:8px" id="b-name">-</div>
+        <div class="disease-box">
+          <h2 id="b-disease">-</h2>
+        </div>
+      </div>
+      <div class="face-bottom">Klik lagi untuk membalik ke depan</div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-bar">
+  <button class="btn-nav" id="btn-prev" onclick="prevCard()">← Prev</button>
+  <div class="card-counter" id="counter">0 / 0</div>
+  <button class="btn-nav" id="btn-next" onclick="nextCard()">Next →</button>
+</div>
+
+<div class="shortcuts">
+  <span><kbd>Spasi</kbd> Balik Kartu</span>
+  <span><kbd>→</kbd> Kartu Berikutnya</span>
+  <span><kbd>←</kbd> Kartu Sebelumnya</span>
+</div>
+
+<script>
+const RAW = [
+["Shane David Febrian Panjaitan","Jakarta"],["Khairani Amalia","Bandung"],["Alvian Ramdhani Suharyono","Semarang"],
+["Ligia Putri Patricia Freitas","Bogor"],["I Komang Sadu Nayaka Wigar","Jakarta"],["Sri Mihewi Rad Tambangraras","Magetan"],
+["Muh. Nafian Hafidza Azka","Cirebon"],["Rafi Sakya Aji","Tangerang"],["Reinhard Nathanael Simanjuntak","Jambi"],
+["Muhammad Rasya Yudyamaulana","Jember"],["Muhammad Rifqi Al Hafiz","Wonosobo"],["Metanoia Gracio Sianipar","Bekasi"],
+["Rifadzaki Abiyyu Arfian","Bogor"],["Mahardika Nur Hakim Putrawan","Sukoharjo"],["Diega Bara Mahardika","Karawang"],
+["Leonathan Binsar Julian Sibagariang","Medan"],["Raya Nathania Maharani","Malang"],["Farel Moza Putra Wintara","Balikpapan"],
+["Garren Timotius Mamentu","Jakarta Timur"],["David Chrismoreno Marulitua","Bandung"],["Adrian Putra Dharma","Tangerang"],
+["Mochammad Aling Layananta","Cirebon"],["Bintang Priabudi","Pekanbaru"],["Fauzan Aditya Ramadhan","Cimahi"],
+["Darren Devonliegh Han","Tangerang"],["Kevin T. R. P. Pardede","Balige"],["Osbert Piniel Hamonangan Sitorus","Pekanbaru"],
+["Azriel Al-Fawwaz","Wonogiri"],["Arif Sumurung Pardede","Toba"],["Fakhira Selima Budiana","Bandung"],
+["Yosephine Tripena Lumbanbatu","Medan"],["Muhammad Reza Laksamana Putra","Tangerang"],["Nauli Al Ghifari","Bukittinggi"],
+["Isaac Emmanuel Ferdinand Kadmaer","Riau"],["Steven Matthew Silitonga","Bandung"],["Rauf Muhammad Ihsan","Bekasi"],
+["Muhammad Dhafa Lubis","Medan"],["Muhammad Trevano Ramsya Rosadinata","Bandung"],["Faathir Al Fath Danson Durahman Junior","Cimahi"],
+["Mazaya Syakira Firmansyah Putri","Bekasi"],["Benedictus Allejandro Susanto","Tangerang"],["Athalla Rasyid Fadilah","Semarang"],
+["Javier Faiq Ahmad Aditya","Magelang"],["Ruben Yabes Sihite","Sukabumi"],["Muhamad Haykal Shiddiq","Bandung"],
+["Christian Welldan Manalu","Tangerang"],["Rava Arvian Danu","Jakarta"],["Varrel Nathanael Hulu","Jakarta"],
+["Jody Satria Bima","Tangerang"],["Gadi Shafrin Hanidar","Kediri"],["Safa Fauziah","Jakarta"],
+["Muhammad Khadaffi Putra Darmawan","Bogor"],["Ugga Priya Danendra","Magetan"],["Muhammad Rakhiradita Cersalzaha","Padang"],
+["Sitorus, Rani Rianti","Bandung"],["Edgar Keandre Hafid","Bekasi"],["I Made Sakha Ananta Wirya","Gianyar"],
+["Andri Cahyanto","Boyolali"],["Feby Keysha Verina","Magelang"],["Ginting, Keisha Keiana","Bandung"],
+["Louis Fernando Karim","Palembang"],["Ammar Zainul Muttaqin","Batam"],["Muhammad Hilmy Farasyah","Surabaya"],
+["Rossa Aditia Putri","Yogyakarta"],["Joshua Parningotan Anandira","Jakarta"],["Mawar Desrilya","Jakarta Timur"],
+["Afrand Fardhad","Tangerang Selatan"],["Salsabila","Palembang"],["Rafa Azkafadey","Klaten"],
+["Tegar Akok Timothy Sinulingga","Medan"],["Muhammad Azzam Nashirullah","Cimahi"],["Naufal Rakha Kumara","Bekasi"],
+["Azka Maulana Wibowo","Tangerang"],["Yusra Handy Prasetyo","Bekasi"],["Rizqy Naufal Fahreza","Jakarta"],
+["Jessica Josephine Panjaitan","Duri"],["Zahra Aulya Rahmadani","Depok"],["Tangguh Adhira Fathin Putra Arifin","Surabaya"],
+["Gracia Dearis Girsang","Palembang"],["Garnis Dwi Andani","Bandung"],["Dzaky Hafiz Winarno","Cimahi"],
+["Teuku Abraar Danaransyah","Jakarta"],["Amanda Ratih Parahita","Boyolali"],["Khalfin Pratama","Riau"],
+["Raditya Zayyan Daffa","Bogor"],["Abian Fikri Hilmi","Tegal"],["Kinan Zayyan Handono","Bogor"],
+["Daffa Archy Nafaros","Bengkulu"],["Chantica Fepy Ardiantis","Blitar"],["Timothy Allen Listiyono","Medan"],
+["Fatih Rizieq","Depok"],["Alfath Ramadhan","Jakarta"],["Andreas Vincent Partogi Lumbantoruan","Jakarta"],
+["Lucky Triyuda Tambunan","Tapanuli Utara"],["Rendra Adytia Wijaya","Banyuwangi"],["Budianda Saor Nainggolan","Deli Serdang"],
+["Frisca Geraldine Rotua","Bogor"],["Abdulloh Mufid Mubarrok","Surabaya"],["Sajarattul Lulu Zahra Setyana","Klaten"],
+["Tazkiyah Putri Ramadhani","Riau"],["Fachri Alma","Jakarta "],["Cheska Florence Tampubolon","Tangerang"],
+["Muhammad Fairuz Al Zundi","Bekasi"],["Gheysar Al Haramain Iswandi","Jakarta"],["Kiera Rasya Minerva","Bandung"],
+["Muhammad Farhan","Bukittinggi"],["Divaldo Voriozaghi Purba","Tebingtinggi"],["Michael Nawwar","Batam"],
+["Ridho Almughny","Tangerang"],["Novian Aditya","Lahat"],["Putra Alfrido Simanjuntak","Dolok Sanggul"],
+["Liska Suriyaningsih","Cirebon"],["Bagas Adriyanto","Bantul"],["Mizard Tiar Rahman","Medan"],
+["Raya Ramadhana Putra Yudono","Ciamis"],["Pryudi Abed Nego Sitorus","MEdan"],["Rayhan Zulfikar Kurniawan","Tasikmalaya"],
+["Muhammad Iqbal","Bandung"],["Farez Abyan Fayyadh","Bekasi"],["Muhammad Ikhlassul Amri Utama","Bogor"],
+["Hafidz Nur Arkan","Bantul"],["Khairunissa Nadira Tausar","Jakarta"],["Ahmad Rafli Ramadhan","Bekasi"],
+["Gerhard Sipayung","Pematangsiantar"],["Anak Agung Ngurah Toto Abi Raditia","Denpasar"],["Brian Wilson","Toba"],
+["M. Thariq Kasim","Banda Aceh"],["Franzeska Jessica Mattea","Jakarta"],["Anwar Fadli Al Ariif Budi Santoso","Bogor"],
+["Muhammad Hafizh","Palembang"],["Naufal Rafiif Salman Salsabil","Indramayu"],["Fathan Akbar Fatahilah","Karawang"],
+["Fransiska Manullang","Jakarta Barat"],["Ramadani Adinata","Demak"],["Muhammad Fakhri Gunawan","Tangerang"],
+["Iffat Hanasta Zuhdi","Pati"],["Denzel Gideon Franclist Tinambunan","Pekanbaru"]
+];
+
+const RIWAYAT = [
+  "-", "Maag", "Asma, maag", "Asam lambung, darah rendah", "-", "Gerd, darah rendah", "-", "-", "-", "-",
+  "-", "Maag", "-", "-", "-", "-", "Asthma", "-", "Dermatitis & Maag", "-",
+  "Skoliosis, Maag", "migrain dan maagh", "-", "Gerd", "Maag", "Gerd", "Maag dan Gastroenteritis Akut", "Asma", "-", "Vertigo",
+  "maag", "Alergi debu", "-", "-", "Asam lambung", "-", "-", "-", "Sinusitis, anemia", "Gerd, vertigo",
+  "-", "-", "Asma", "-", "-", "-", "-", "Asma", "-", "-",
+  "-", "-", "-", "-", "Asam lambung", "-", "Maag dan GERD", "-", "maag", "-",
+  "-", "-", "-", "-", "-", "Alergi Debu", "GERD, Tipes", "Alergi debu, dingin, ikan laut, dan Maag", "-", "-",
+  "aslam", "Gerd, maag", "-", "-", "-", "anemia", "-", "-", "-", "-",
+  "-", "Asma", "Gerd, anemia", "-", "-", "-", "-", "Kelenjar getah bening jinak", "Alergi Dingin", "Hipotensi",
+  "-", "-", "-", "-", "-", "-", "asam lambung", "-", "sakit maag", "Asam Lambung",
+  "Asma", "-", "-", "-", "Asma", "-", "-", "-", "-", "Mag",
+  "alergi dingin", "-", "-", "Sinusitis", "-", "-", "Tipes", "-", "-", "-",
+  "-", "Alergi dingin, asam lambung", "Rhinitis dan Sinusitis", "-", "-", "-", "-", "-", "-", "-",
+  "Flek, Brongkitis, amandel", "-", "Maag", "Cedera Ligamen", "-", "-", "-"
+];
+
+const NONE = new Set(['-','–','—','tidak ada','tidak','gak ada','ga ada','nggak ada','nihil','kosong','none']);
+
+// Filter data: Hanya yang memiliki riwayat penyakit
+const DATA_WITH_HISTORY = RAW.map((r, i) => ({
+  name: r[0].trim(),
+  origin: r[1].trim(),
+  nim: 12225001 + i,
+  history: (RIWAYAT[i] || '-').trim()
+})).filter(item => !NONE.has(item.history.toLowerCase().trim()));
+
+let list = [...DATA_WITH_HISTORY];
+let currentIndex = 0;
+let isFlipped = false;
+let mode = "ordered";
+
+function updateCard() {
+  const item = list[currentIndex];
+  isFlipped = false;
+  document.getElementById('flipper').classList.remove('is-flipped');
+
+  // Set Muka Depan
+  document.getElementById('f-nim').textContent = item.nim;
+  document.getElementById('f-name').textContent = item.name;
+  document.getElementById('f-origin').textContent = '📍 ' + item.origin;
+
+  // Set Muka Belakang
+  document.getElementById('b-nim').textContent = item.nim;
+  document.getElementById('b-name').textContent = item.name;
+  document.getElementById('b-disease').textContent = item.history;
+
+  // Navigasi & Counter
+  document.getElementById('counter').textContent = `${currentIndex + 1} / ${list.length}`;
+  document.getElementById('btn-prev').disabled = currentIndex === 0;
+  document.getElementById('btn-next').disabled = currentIndex === list.length - 1;
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('flipper').classList.toggle('is-flipped', isFlipped);
+}
+
+function nextCard() {
+  if (currentIndex < list.length - 1) {
+    currentIndex++;
+    updateCard();
+  }
+}
+
+function prevCard() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    updateCard();
+  }
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Handler Tombol Urut/Acak
+const seg = document.getElementById('mode-seg');
+seg.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const chosen = btn.dataset.mode;
+    if (chosen === mode) return;
+    mode = chosen;
+    seg.dataset.mode = mode;
+    seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === btn));
+
+    if (mode === 'shuffle') {
+      list = shuffle(DATA_WITH_HISTORY);
+    } else {
+      list = [...DATA_WITH_HISTORY];
+    }
+    currentIndex = 0;
+    updateCard();
+  });
+});
+
+// Kontrol Keyboard
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    flipCard();
+  } else if (e.code === 'ArrowRight') {
+    nextCard();
+  } else if (e.code === 'ArrowLeft') {
+    prevCard();
+  }
+});
+
+// Inisialisasi awal
+updateCard();
+</script>
+</body>
+</html>
